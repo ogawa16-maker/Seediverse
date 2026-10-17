@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ちがっタネ Prototype v0.4</title>
+<title>ちがっタネ Prototype v0.5 修正版</title>
 <style>
 :root{--ink:#174d5c;--sub:#64766f;--green:#5fa943;--green2:#e9f6dc;--coral:#ff7964;--yellow:#f6b90c;--sky:#35a8dd;--paper:#fffef9;--line:#e4eadf;--shadow:0 16px 40px rgba(35,85,63,.10)}
 *{box-sizing:border-box} body{margin:0;color:#253c38;background:#fbfcf7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
@@ -46,7 +46,7 @@ button,input,textarea{font:inherit} button{cursor:pointer} .hidden{display:none!
 </div>
 
 <div id="app" class="app hidden">
-  <div class="top"><div class="logo">ちがっタネ 🌱</div><div class="pill">Prototype v0.4</div></div>
+  <div class="top"><div class="logo">ちがっタネ 🌱</div><div class="pill">Prototype v0.5 修正版</div></div>
   <div class="stepbar"><div id="progress" style="width:8%"></div></div>
 
   <section id="s1" class="screen">
@@ -61,10 +61,10 @@ button,input,textarea{font:inherit} button{cursor:pointer} .hidden{display:none!
   <section id="s3" class="screen hidden"><div class="card"><div class="sub" id="whoLabel"></div><h2>まず、ひとことで。</h2><p class="sub" id="questionEcho"></p><div class="field"><input id="shortAnswer" placeholder="思ったことをひとことで"></div><button class="btn ghost" onclick="voiceStub()">🎙 話して入力（デモ）</button><div id="previousAnswers"></div><button class="btn" onclick="toReason()">次へ</button></div></section>
   <section id="s4" class="screen hidden"><div class="card"><div class="sub" id="answerEcho"></div><h2>どうしてそう思う？</h2><div class="field"><textarea id="reason" placeholder="理由を話したり、書いたりしてね"></textarea></div><button class="btn secondary" onclick="showHints()">💡 うまく言葉にならない → ヒントをもらう</button><div id="hints" class="hint hidden"></div><button class="btn" onclick="saveAnswer()">このタネを置く</button></div></section>
   <section id="s5" class="screen hidden"><div class="card"><h2>みんなのタネ 🌱</h2><p class="sub">答えが同じでも、理由は違うかもしれません。</p><div id="allAnswers"></div><div class="facil"><b>💬 ちょっと話してみよう</b><div class="bubble" id="facilPrompt"></div></div><button class="btn" onclick="buildSummaries();go(6)">話した！ 次へ</button></div></section>
-  <section id="s6" class="screen hidden"><div class="card"><h2>わたしのタネ</h2><p class="sub">最初に書いた「ひとこと」と「理由」をそのまま表示しています。話して考えが変わったときだけ、自由に直せます。</p><div id="summaries"></div><button class="btn" onclick="openMap()">タネマップを見る</button></div></section>
+  <section id="s6" class="screen hidden"><div class="card"><h2>わたしのタネ</h2><p class="sub"><b>ここではAIによる要約・言い換えはしません。</b><br>あなたが最初に書いた「ひとこと」と「理由」を、そのまま表示します。話して考えが変わったときだけ「直す」を押してください。</p><div id="summaries"></div><button class="btn" onclick="openMap()">タネマップを見る</button></div></section>
   <section id="s7" class="screen hidden"><div class="card"><h2>タネマップ 🌱</h2><p class="sub">タネの集まり方から、自分に近い考えが多めか少なめかを、やんわり感じられます。</p><div class="axisTop" id="axisTop"></div><div id="map" class="map"></div><div class="axisX"><span id="axisLeft"></span><span id="axisRight"></span></div><div class="axisBottom" id="axisBottom"></div><div class="legend">🌱 小さいタネ＝AIで事前生成したサンプル ／ 大きいタネ＝今回の回答</div><div id="density" class="density"></div><div class="seed-detail">
       <b>🌱 だれかのタネ</b>
-      <p class="sub" style="margin:6px 0 10px">自分から遠い考えを2つ紹介します。マップの気になるタネも選べます。</p>
+      <p class="sub" style="margin:6px 0 10px"><b>自分から遠い考えを2つ紹介します。</b><br>さらに、タネマップから気になる意見を1つ選べます。</p>
       <div id="farSeeds"></div>
       <div id="selectedSeed" style="margin-top:10px"></div>
     </div><button class="btn" onclick="go(8)">ふりかえる</button><p class="footer-note">※プロトタイプのため、背景のタネはAI生成サンプルです。実回答と混同しないようデータ上も分離しています。</p></div></section>
@@ -143,25 +143,58 @@ function toReason(){let v=document.getElementById('shortAnswer').value.trim();if
 function showHints(){let a=document.getElementById('shortAnswer').value.trim(),list=hintFor(a),box=document.getElementById('hints');box.innerHTML='<b>💡 こんな理由もありそう</b>'+list.map(x=>`<button onclick="chooseHint('${js(x)}')">${esc(x)}</button>`).join('')+`<button onclick="chooseHint('')">どれもちょっと違う／自分の言葉で話す</button>`;box.classList.remove('hidden')}
 function chooseHint(t){if(t)document.getElementById('reason').value=t;document.getElementById('hints').classList.add('hidden')}
 function hintFor(a){if(activeQ.id==='q2'){if(/言|伝|反対|話/.test(a))return ['自分の気持ちを知ってもらうことが大事だと思うから','人数が少なくても、意見を言っていいと思うから','理由まで話せば分かってもらえるかもしれないから'];if(/合わせ|我慢|従|黙/.test(a))return ['自分一人のために話を止めたくないから','クラス全体の雰囲気も大切にしたいから','少しくらいなら譲ってもいいと思うから'];if(/先生|友達|相談/.test(a))return ['一人で言うのは不安だけど、誰かには気持ちを知ってほしいから','みんなの前より話しやすい方法を選びたいから','どうしたらいいか一緒に考えてほしいから'];return ['イヤの理由をまず自分で確かめたいから','違う意見があっても一緒にできる方法を探したいから','その時の状況によって決めたいから']} if(/別々|それぞれ|自由/.test(a))return ['それぞれが本当にしたいことを大切にしたいから','無理に同じにしなくても家族でいられると思うから','あとで集まる時間を作ればいいと思うから'];if(/多数決|順番|ルール/.test(a))return ['みんなの意見を同じように扱えて公平だと思うから','誰かだけが我慢し続けないから','決め方が分かりやすいから'];return ['理由を聞けば別の案が見つかるかもしれないから','一人だけが我慢するより少しずつ納得したいから','家族でも違っていていいと思うから']}
-function saveAnswer(){let short=document.getElementById('shortAnswer').value.trim(),reason=document.getElementById('reason').value.trim();if(!reason)return toast('理由を書いてみるか、ヒントを使ってみてね');let pos=classify(short+' '+reason);responses.push({name:names[current],short,reason,x:pos.x,y:pos.y,summary:makeSummary(pos)});current++;if(current<participantCount){loadAnswerScreen();go(3)}else{renderAllAnswers();go(5)}}
+function saveAnswer(){let short=document.getElementById('shortAnswer').value.trim(),reason=document.getElementById('reason').value.trim();if(!reason)return toast('理由を書いてみるか、ヒントを使ってみてね');let pos=classify(short+' '+reason);responses.push({name:names[current],short,reason,originalShort:short,originalReason:reason,x:pos.x,y:pos.y});current++;if(current<participantCount){loadAnswerScreen();go(3)}else{renderAllAnswers();go(5)}}
 function classify(t){let x=0,y=0;if(activeQ.id==='q2'){if(/言う|伝え|反対|自分の意見|別の案|参加しない/.test(t))x-=58;if(/合わせ|我慢|従う|黙|空気|みんなが/.test(t))x+=58;if(/先生|友達|相談|話し合|質問|書いて|伝え/.test(t))y+=62;if(/何も言わ|黙|我慢|合わせ/.test(t))y-=62;if(/試|やってみ/.test(t)){x+=25;y-=18}}else{if(/別々|それぞれ|自由|好きなこと/.test(t))x+=72;if(/一緒|みんなで|全員/.test(t))x-=55;if(/多数決|ルール|公平|順番/.test(t))y-=65;if(/話し合|相談|納得|理由|気持ち/.test(t))y+=65}if(x===0)x=(hash(t)%81)-40;if(y===0)y=(hash(t+'y')%81)-40;return {x:clamp(x,-95,95),y:clamp(y,-95,95)}}
-function makeSummary(p){if(activeQ.id==='q2'){if(p.x<-35&&p.y>25)return '自分の気持ちを大切にして、周りにも伝えたい';if(p.x>35&&p.y<-25)return 'みんなとの調和を大切にして、自分の中で受け止めたい';if(p.x<0&&p.y<0)return '自分の気持ちは大切にしつつ、まず自分の中で考えたい';if(p.x>0&&p.y>0)return 'みんなとの関係を大切にしながら、周りにも働きかけたい';return '自分の気持ちと、みんなとの関係の両方を考えたい'}if(p.x>35&&p.y>25)return '一人ひとりの希望や、その時の気持ちを大切にしたい';if(p.x<-35&&p.y>25)return 'みんなで過ごすことと、納得できる話し合いを大切にしたい';if(p.y<-25)return '公平で分かりやすい決め方を大切にしたい';return '一緒に過ごすことと、それぞれの希望のバランスを大切にしたい'}
 function renderAllAnswers(){document.getElementById('allAnswers').innerHTML=responses.map(r=>`<div class="answer-card"><b>🌱 ${esc(r.name)}</b><div class="quote">「${esc(r.short)}」</div><div class="sub">${esc(r.reason)}</div></div>`).join('');document.getElementById('facilPrompt').textContent=facilitate()}
 function facilitate(){if(responses.length<2)return 'その答えで、いちばん大切にしていることは何だろう？';let a=responses[0],b=responses[1],same=Math.hypot(a.x-b.x,a.y-b.y)<45;return same?`${a.name}さんと${b.name}さんは近い場所。でも、理由まで同じかな？何を一番大切にしているか聞き合ってみよう。`:`${a.name}さんと${b.name}さんは少し違う場所。相手の理由の中で「そこはちょっと分かる」と思えるところはある？`}
 function buildSummaries(){
-  document.getElementById('summaries').innerHTML=responses.map((r,i)=>`
-    <div class="summary">
+  document.getElementById('summaries').innerHTML=responses.map((r,i)=>{
+    // Backward-safe: if an older response object has no original fields, current input is the original.
+    if(r.originalShort===undefined) r.originalShort=r.short;
+    if(r.originalReason===undefined) r.originalReason=r.reason;
+    return `
+    <div class="summary" id="mySeed${i}">
       <b>🌱 ${esc(r.name)}</b>
-      <div class="field">
-        <label class="label">ひとこと</label>
-        <input value="${escAttr(r.short)}" oninput="responses[${i}].short=this.value">
+      <div class="sub" style="margin-top:10px">最初に書いた「ひとこと」</div>
+      <div class="quote">「${esc(r.originalShort)}」</div>
+      <div class="sub" style="margin-top:10px">最初に書いた「理由」</div>
+      <div style="line-height:1.7">${esc(r.originalReason)}</div>
+      <button class="btn secondary" id="editBtn${i}" onclick="enableSeedEdit(${i})">話して考えが変わったので直す</button>
+      <div id="editSeed${i}" class="hidden">
+        <div class="field">
+          <label class="label">ひとこと</label>
+          <input id="editShort${i}" value="${escAttr(r.short)}">
+        </div>
+        <div class="field">
+          <label class="label">理由</label>
+          <textarea id="editReason${i}">${esc(r.reason)}</textarea>
+        </div>
+        <button class="btn ghost" onclick="applySeedEdit(${i})">この内容に更新する</button>
+        <button class="btn secondary" onclick="cancelSeedEdit(${i})">変更しない</button>
       </div>
-      <div class="field">
-        <label class="label">理由</label>
-        <textarea oninput="responses[${i}].reason=this.value">${esc(r.reason)}</textarea>
-      </div>
-      <div class="sub">※最初に入力した内容です。話して考えが変わった場合だけ直してください。</div>
-    </div>`).join('');
+      <div id="editStatus${i}" class="sub" style="margin-top:8px">変更していません。最初に書いたタネのままです。</div>
+    </div>`;
+  }).join('');
+}
+function enableSeedEdit(i){
+  document.getElementById('editSeed'+i).classList.remove('hidden');
+  document.getElementById('editBtn'+i).classList.add('hidden');
+}
+function applySeedEdit(i){
+  const s=document.getElementById('editShort'+i).value.trim();
+  const r=document.getElementById('editReason'+i).value.trim();
+  if(!s||!r){toast('ひとことと理由の両方を入れてください');return}
+  responses[i].short=s;
+  responses[i].reason=r;
+  document.getElementById('editSeed'+i).classList.add('hidden');
+  document.getElementById('editBtn'+i).classList.remove('hidden');
+  document.getElementById('editStatus'+i).innerHTML='<b>話した後の内容に更新しました。</b> タネマップには、この内容を使います。';
+}
+function cancelSeedEdit(i){
+  document.getElementById('editShort'+i).value=responses[i].short;
+  document.getElementById('editReason'+i).value=responses[i].reason;
+  document.getElementById('editSeed'+i).classList.add('hidden');
+  document.getElementById('editBtn'+i).classList.remove('hidden');
 }
 function openMap(){
   try{
@@ -196,7 +229,7 @@ function renderMap(){
   document.getElementById('axisRight').textContent=activeQ.xPos+' →';
   updateDensity();
   renderFarSeeds();
-  document.getElementById('selectedSeed').innerHTML='<div class="perspective-card selected"><div class="kind">③ タネマップから選んだ意見</div><div class="sub">マップの気になる 🌱 を押すと、ここに表示されます。</div></div>';
+  document.getElementById('selectedSeed').innerHTML='<div class="perspective-card selected"><div class="kind">（3）タネマップから選択した意見</div><div class="sub">マップの気になる 🌱 を押すと、ここに表示されます。</div></div>';
 }
 function getReferencePoint(){
   if(!responses.length)return {x:0,y:0};
@@ -232,16 +265,16 @@ function perspectiveCard(s,label,cls='far'){
 }
 function renderFarSeeds(){
   const far=getFarSeeds();
-  document.getElementById('farSeeds').innerHTML=far.map((s,i)=>perspectiveCard(s,`${i+1} 自分から遠い意見 ${i===0?'①':'②'}`)).join('');
+  document.getElementById('farSeeds').innerHTML=far.map((s,i)=>perspectiveCard(s,`（${i+1}）自分から遠い意見${i===0?'①':'②'}`)).join('');
   if(far.length)viewedDifferent=true;
 }
 function showSeed(s,user=false){
   if(user){
-    document.getElementById('selectedSeed').innerHTML=`<div class="perspective-card selected"><div class="kind">③ タネマップから選んだ意見</div><div class="quote">「${esc(s.short)}」</div><p class="sub">${esc(s.reason)}</p><div class="sub">これは今回の ${esc(s.name)} さんのタネです。</div></div>`;
+    document.getElementById('selectedSeed').innerHTML=`<div class="perspective-card selected"><div class="kind">（3）タネマップから選択した意見</div><div class="quote">「${esc(s.short)}」</div><p class="sub">${esc(s.reason)}</p><div class="sub">これは今回の ${esc(s.name)} さんのタネです。</div></div>`;
     return;
   }
   if(responses.length&&Math.min(...responses.map(r=>dist(r,s)))>65)viewedDifferent=true;
-  document.getElementById('selectedSeed').innerHTML=perspectiveCard(s,'③ タネマップから選んだ意見','selected');
+  document.getElementById('selectedSeed').innerHTML=perspectiveCard(s,'（3）タネマップから選択した意見','selected');
 }
 function pickReflection(el,v){reflection=v;document.querySelectorAll('#reflectionBtns button').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
 function finish(){if(!reflection)return toast('今の気持ちをひとつ選んでみてね');let state=JSON.parse(localStorage.getItem('chigattaneGrowth')||'{"sessions":0,"different":0,"flowers":0}');state.sessions++;if(viewedDifferent)state.different++;let nf=Math.floor(Math.min(state.sessions,state.different)/5),bloomed=nf>state.flowers;state.flowers=nf;localStorage.setItem('chigattaneGrowth',JSON.stringify(state));if(shareChoice){let shared=JSON.parse(localStorage.getItem('chigattaneShared')||'[]');shared.push(...responses.map(r=>({...r,questionId:activeQ.id,shared:true,createdAt:new Date().toISOString()})));localStorage.setItem('chigattaneShared',JSON.stringify(shared))}document.getElementById('growthIcon').textContent=bloomed?'🌸':state.sessions>=3?'🌷':'🌱';document.getElementById('growthTitle').textContent=bloomed?'花がひとつ咲きました。':state.sessions>=3?'つぼみがふくらんできました。':'芽が出ました。';document.getElementById('growthText').textContent=`これまで ${state.sessions} 回タネを植え、違う場所のタネに ${state.different} 回出会いました。`;document.getElementById('growthBar').style.width=Math.min(100,(Math.min(state.sessions,state.different)%5)/5*100)+'%';document.getElementById('garden').textContent='🌱 '.repeat(Math.min(state.sessions,5))+'🌸 '.repeat(Math.min(state.flowers,8));go(9)}
