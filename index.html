@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ちがっタネ Prototype v0.5 修正版</title>
+<title>ちがっタネ Prototype v0.6</title>
 <style>
 :root{--ink:#174d5c;--sub:#64766f;--green:#5fa943;--green2:#e9f6dc;--coral:#ff7964;--yellow:#f6b90c;--sky:#35a8dd;--paper:#fffef9;--line:#e4eadf;--shadow:0 16px 40px rgba(35,85,63,.10)}
 *{box-sizing:border-box} body{margin:0;color:#253c38;background:#fbfcf7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
@@ -46,7 +46,7 @@ button,input,textarea{font:inherit} button{cursor:pointer} .hidden{display:none!
 </div>
 
 <div id="app" class="app hidden">
-  <div class="top"><div class="logo">ちがっタネ 🌱</div><div class="pill">Prototype v0.5 修正版</div></div>
+  <div class="top"><div class="logo">ちがっタネ 🌱</div><div class="pill">Prototype v0.6</div></div>
   <div class="stepbar"><div id="progress" style="width:8%"></div></div>
 
   <section id="s1" class="screen">
@@ -63,10 +63,14 @@ button,input,textarea{font:inherit} button{cursor:pointer} .hidden{display:none!
   <section id="s5" class="screen hidden"><div class="card"><h2>みんなのタネ 🌱</h2><p class="sub">答えが同じでも、理由は違うかもしれません。</p><div id="allAnswers"></div><div class="facil"><b>💬 ちょっと話してみよう</b><div class="bubble" id="facilPrompt"></div></div><button class="btn" onclick="buildSummaries();go(6)">話した！ 次へ</button></div></section>
   <section id="s6" class="screen hidden"><div class="card"><h2>わたしのタネ</h2><p class="sub"><b>ここではAIによる要約・言い換えはしません。</b><br>あなたが最初に書いた「ひとこと」と「理由」を、そのまま表示します。話して考えが変わったときだけ「直す」を押してください。</p><div id="summaries"></div><button class="btn" onclick="openMap()">タネマップを見る</button></div></section>
   <section id="s7" class="screen hidden"><div class="card"><h2>タネマップ 🌱</h2><p class="sub">タネの集まり方から、自分に近い考えが多めか少なめかを、やんわり感じられます。</p><div class="axisTop" id="axisTop"></div><div id="map" class="map"></div><div class="axisX"><span id="axisLeft"></span><span id="axisRight"></span></div><div class="axisBottom" id="axisBottom"></div><div class="legend">🌱 小さいタネ＝AIで事前生成したサンプル ／ 大きいタネ＝今回の回答</div><div id="density" class="density"></div><div class="seed-detail">
-      <b>🌱 だれかのタネ</b>
-      <p class="sub" style="margin:6px 0 10px"><b>自分から遠い考えを2つ紹介します。</b><br>さらに、タネマップから気になる意見を1つ選べます。</p>
-      <div id="farSeeds"></div>
-      <div id="selectedSeed" style="margin-top:10px"></div>
+      <h3 style="margin:0 0 6px;color:var(--ink)">🌱 だれかのタネ</h3>
+      <p class="sub" style="margin:0 0 12px"><b>自分から遠い考えを2つ紹介します。</b><br>どちらも、いま表示されているタネマップの中から選んでいます。</p>
+      <div id="farSeeds">
+        <div class="sub">遠いタネを探しています…</div>
+      </div>
+      <div style="height:1px;background:var(--line);margin:14px 0"></div>
+      <p class="sub" style="margin:0 0 8px"><b>もう1つは、自分で選んでみよう。</b><br>マップの気になる 🌱 を押してください。</p>
+      <div id="selectedSeed"></div>
     </div><button class="btn" onclick="go(8)">ふりかえる</button><p class="footer-note">※プロトタイプのため、背景のタネはAI生成サンプルです。実回答と混同しないようデータ上も分離しています。</p></div></section>
   <section id="s8" class="screen hidden"><div class="card"><h2>今日のふりかえり</h2><p>違う考えに出会って、今の気持ちに一番近いものは？</p><div class="reaction" id="reflectionBtns"><button onclick="pickReflection(this,'おもしろかった')">おもしろかった</button><button onclick="pickReflection(this,'ちょっと分かった')">ちょっと分かった</button><button onclick="pickReflection(this,'まだよく分からない')">まだよく分からない</button><button onclick="pickReflection(this,'やっぱり私は違う')">やっぱり私は違う</button></div><div class="field"><label class="label">このタネを、知らない誰かにも届けますか？</label><div class="row"><button class="btn small ghost" onclick="shareChoice=true;toast('みんなのタネにする を選びました')">🌱 みんなのタネにする</button><button class="btn small secondary" onclick="shareChoice=false;toast('自分たちだけ を選びました')">🔒 自分たちだけ</button></div></div><button class="btn" onclick="finish()">今日のタネを植える</button></div></section>
   <section id="s9" class="screen hidden"><div class="card center"><div class="sub">今日のタネを植えました</div><div id="growthIcon" class="growth">🌱</div><h2 id="growthTitle">芽が出ました。</h2><p id="growthText" class="sub"></p><div class="progress"><div id="growthBar"></div></div><div id="garden" class="garden"></div><button class="btn" onclick="restart()">別の問いもためす</button><button class="btn secondary" onclick="backHome()">トップに戻る</button></div></section>
@@ -140,9 +144,84 @@ function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.add('
 function startAnswers(){names=[];for(let i=0;i<participantCount;i++)names.push(document.getElementById('name'+i).value.trim()||`${i+1}人目`);current=0;responses=[];loadAnswerScreen();go(3)}
 function loadAnswerScreen(){document.getElementById('whoLabel').textContent=`🌱 ${names[current]}のタネ`;document.getElementById('questionEcho').textContent=activeQ.title;document.getElementById('shortAnswer').value='';document.getElementById('previousAnswers').innerHTML=responses.length?'<p class="sub">これまでの答え</p>'+responses.map(r=>`<span class="tag">${esc(r.name)}「${esc(r.short)}」</span>`).join(''):''}
 function toReason(){let v=document.getElementById('shortAnswer').value.trim();if(!v)return toast('ひとこと答えてみてね');document.getElementById('answerEcho').textContent=`${names[current]}：「${v}」`;document.getElementById('reason').value='';document.getElementById('hints').classList.add('hidden');go(4)}
-function showHints(){let a=document.getElementById('shortAnswer').value.trim(),list=hintFor(a),box=document.getElementById('hints');box.innerHTML='<b>💡 こんな理由もありそう</b>'+list.map(x=>`<button onclick="chooseHint('${js(x)}')">${esc(x)}</button>`).join('')+`<button onclick="chooseHint('')">どれもちょっと違う／自分の言葉で話す</button>`;box.classList.remove('hidden')}
+function showHints(){
+  let a=document.getElementById('shortAnswer').value.trim();
+  if(!a){toast('まず、ひとことで答えてみてね');return}
+  let list=hintFor(a),box=document.getElementById('hints');
+  box.innerHTML=`<b>💡 「${esc(a)}」に近いタネから、理由のヒントを選びました</b>
+    <div class="sub" style="margin:5px 0 8px">あなたの答えに関係しそうなものを優先しています。ぴったりでなければ選ばなくて大丈夫です。</div>`+
+    list.map(x=>`<button onclick="chooseHint('${js(x)}')">${esc(x)}</button>`).join('')+
+    `<button onclick="chooseHint('')">どれもちょっと違う／自分の言葉で話す</button>`;
+  box.classList.remove('hidden')
+}
 function chooseHint(t){if(t)document.getElementById('reason').value=t;document.getElementById('hints').classList.add('hidden')}
-function hintFor(a){if(activeQ.id==='q2'){if(/言|伝|反対|話/.test(a))return ['自分の気持ちを知ってもらうことが大事だと思うから','人数が少なくても、意見を言っていいと思うから','理由まで話せば分かってもらえるかもしれないから'];if(/合わせ|我慢|従|黙/.test(a))return ['自分一人のために話を止めたくないから','クラス全体の雰囲気も大切にしたいから','少しくらいなら譲ってもいいと思うから'];if(/先生|友達|相談/.test(a))return ['一人で言うのは不安だけど、誰かには気持ちを知ってほしいから','みんなの前より話しやすい方法を選びたいから','どうしたらいいか一緒に考えてほしいから'];return ['イヤの理由をまず自分で確かめたいから','違う意見があっても一緒にできる方法を探したいから','その時の状況によって決めたいから']} if(/別々|それぞれ|自由/.test(a))return ['それぞれが本当にしたいことを大切にしたいから','無理に同じにしなくても家族でいられると思うから','あとで集まる時間を作ればいいと思うから'];if(/多数決|順番|ルール/.test(a))return ['みんなの意見を同じように扱えて公平だと思うから','誰かだけが我慢し続けないから','決め方が分かりやすいから'];return ['理由を聞けば別の案が見つかるかもしれないから','一人だけが我慢するより少しずつ納得したいから','家族でも違っていていいと思うから']}
+function normalizeJP(s){
+  return String(s||'').toLowerCase()
+    .replace(/[「」『』（）()、。！？!?\s・ー〜～]/g,'');
+}
+function charNgrams(s,n=2){
+  s=normalizeJP(s);
+  let out=[];
+  for(let i=0;i<=s.length-n;i++)out.push(s.slice(i,i+n));
+  return new Set(out);
+}
+function overlapScore(a,b){
+  const A=charNgrams(a),B=charNgrams(b);
+  if(!A.size||!B.size)return 0;
+  let hit=0; A.forEach(x=>{if(B.has(x))hit++});
+  return hit/Math.sqrt(A.size*B.size);
+}
+function intentBonus(a,s){
+  const t=normalizeJP(a),u=normalizeJP((s.short||'')+(s.reason||''));
+  const groups=activeQ.id==='q2' ? [
+    ['言う','伝える','反対','意見','話す','主張'],
+    ['合わせる','我慢','従う','黙る','空気'],
+    ['先生','相談','友達','親','誰か'],
+    ['別案','別の案','変える','方法','やり方'],
+    ['参加しない','別のこと','距離','休む'],
+    ['やってみる','試す','挑戦']
+  ] : [
+    ['別々','それぞれ','自由','好きなこと'],
+    ['多数決','順番','公平','ルール','じゃんけん'],
+    ['話し合う','相談','理由','納得','聞く'],
+    ['一緒','みんな','全員','家族'],
+    ['子ども','楽しみ','気持ち','優先'],
+    ['午前','午後','分ける','少しずつ']
+  ];
+  let bonus=0;
+  groups.forEach(g=>{
+    const inA=g.some(k=>t.includes(normalizeJP(k)));
+    const inU=g.some(k=>u.includes(normalizeJP(k)));
+    if(inA&&inU)bonus+=1;
+  });
+  return bonus;
+}
+function hintFor(a){
+  // 回答だけを仮にマップ上へ置き、その近くの既存サンプルから理由を引く。
+  const pos=classify(a);
+  const ranked=activeQ.samples.map(s=>{
+    const d=Math.hypot(s.x-pos.x,s.y-pos.y);
+    const lexical=overlapScore(a,(s.short||'')+' '+(s.reason||''));
+    const bonus=intentBonus(a,s);
+    // 近さを基本に、言葉の重なりと意図カテゴリを強く加点。
+    const score=(200-d)/200 + lexical*2.2 + bonus*1.35;
+    return {...s,_hintScore:score};
+  }).sort((a,b)=>b._hintScore-a._hintScore);
+
+  const out=[];
+  for(const s of ranked){
+    if(!s.reason)continue;
+    const r=s.reason.trim();
+    if(out.some(x=>normalizeJP(x)===normalizeJP(r)))continue;
+    out.push(r);
+    if(out.length>=4)break;
+  }
+  return out.length?out:[
+    'その答えを大事にしたいと思ったから',
+    '自分の気持ちと、みんなの気持ちの両方を考えたいから',
+    'その時の状況によって決めたいから'
+  ];
+}
 function saveAnswer(){let short=document.getElementById('shortAnswer').value.trim(),reason=document.getElementById('reason').value.trim();if(!reason)return toast('理由を書いてみるか、ヒントを使ってみてね');let pos=classify(short+' '+reason);responses.push({name:names[current],short,reason,originalShort:short,originalReason:reason,x:pos.x,y:pos.y});current++;if(current<participantCount){loadAnswerScreen();go(3)}else{renderAllAnswers();go(5)}}
 function classify(t){let x=0,y=0;if(activeQ.id==='q2'){if(/言う|伝え|反対|自分の意見|別の案|参加しない/.test(t))x-=58;if(/合わせ|我慢|従う|黙|空気|みんなが/.test(t))x+=58;if(/先生|友達|相談|話し合|質問|書いて|伝え/.test(t))y+=62;if(/何も言わ|黙|我慢|合わせ/.test(t))y-=62;if(/試|やってみ/.test(t)){x+=25;y-=18}}else{if(/別々|それぞれ|自由|好きなこと/.test(t))x+=72;if(/一緒|みんなで|全員/.test(t))x-=55;if(/多数決|ルール|公平|順番/.test(t))y-=65;if(/話し合|相談|納得|理由|気持ち/.test(t))y+=65}if(x===0)x=(hash(t)%81)-40;if(y===0)y=(hash(t+'y')%81)-40;return {x:clamp(x,-95,95),y:clamp(y,-95,95)}}
 function renderAllAnswers(){document.getElementById('allAnswers').innerHTML=responses.map(r=>`<div class="answer-card"><b>🌱 ${esc(r.name)}</b><div class="quote">「${esc(r.short)}」</div><div class="sub">${esc(r.reason)}</div></div>`).join('');document.getElementById('facilPrompt').textContent=facilitate()}
@@ -228,34 +307,44 @@ function renderMap(){
   document.getElementById('axisLeft').textContent='← '+activeQ.xNeg;
   document.getElementById('axisRight').textContent=activeQ.xPos+' →';
   updateDensity();
+  const selected=document.getElementById('selectedSeed');
+  if(selected)selected.innerHTML='<div class="perspective-card selected"><div class="kind">（3）タネマップから選択した意見</div><div class="sub">マップの気になる 🌱 を押すと、ここに具体的な意見と理由が表示されます。</div></div>';
   renderFarSeeds();
-  document.getElementById('selectedSeed').innerHTML='<div class="perspective-card selected"><div class="kind">（3）タネマップから選択した意見</div><div class="sub">マップの気になる 🌱 を押すと、ここに表示されます。</div></div>';
 }
 function getReferencePoint(){
+  // 「自分から遠い」は、1人目（通常「わたし」）のタネを基準にする。
+  // 複数人の平均にはしない。
   if(!responses.length)return {x:0,y:0};
-  return {
-    x:responses.reduce((a,r)=>a+r.x,0)/responses.length,
-    y:responses.reduce((a,r)=>a+r.y,0)/responses.length
-  };
+  return {x:responses[0].x,y:responses[0].y};
 }
 function getFarSeeds(){
   const ref=getReferencePoint();
-  const ranked=activeQ.samples.map(s=>({...s,_distance:Math.hypot(s.x-ref.x,s.y-ref.y)})).sort((a,b)=>b._distance-a._distance);
-  if(!ranked.length)return [];
+  const ranked=activeQ.samples
+    .map(s=>({...s,_distance:Math.hypot(s.x-ref.x,s.y-ref.y)}))
+    .sort((a,b)=>b._distance-a._distance);
+
+  if(ranked.length<=2)return ranked;
+
   const first=ranked[0];
-  // 2つ目は「遠い」だけでなく、1つ目ともなるべく違う方向の意見を選ぶ。
-  const second=ranked.slice(1).sort((a,b)=>{
-    const diversityA=Math.hypot(a.x-first.x,a.y-first.y)+a._distance*.65;
-    const diversityB=Math.hypot(b.x-first.x,b.y-first.y)+b._distance*.65;
-    return diversityB-diversityA;
-  })[0];
+
+  // 2つ目も「自分から十分遠い」候補に限定し、
+  // その中から1つ目とは別方向・別内容になりやすいものを選ぶ。
+  const farPool=ranked.slice(1,Math.min(18,ranked.length));
+  let second=farPool
+    .map(s=>{
+      const awayFromFirst=Math.hypot(s.x-first.x,s.y-first.y);
+      const textDifferent=1-overlapScore(first.short+' '+first.reason,s.short+' '+s.reason);
+      return {...s,_secondScore:s._distance*.60+awayFromFirst*.30+textDifferent*55};
+    })
+    .sort((a,b)=>b._secondScore-a._secondScore)[0];
+
   return [first,second].filter(Boolean);
 }
 function perspectiveCard(s,label,cls='far'){
   return `<div class="perspective-card ${cls}">
     <div class="kind">${label}</div>
     <div class="quote">「${esc(s.short)}」</div>
-    <p class="sub" style="margin:6px 0">${esc(s.reason)}</p>
+    <p class="sub" style="margin:7px 0 10px"><b>理由：</b>${esc(s.reason)}</p>
     <div class="reaction">
       <button onclick="this.classList.toggle('active')">ちょっと分かる</button>
       <button onclick="this.classList.toggle('active');viewedDifferent=true">もっと聞いてみたい</button>
@@ -264,9 +353,24 @@ function perspectiveCard(s,label,cls='far'){
   </div>`;
 }
 function renderFarSeeds(){
+  const box=document.getElementById('farSeeds');
+  if(!box)return;
   const far=getFarSeeds();
-  document.getElementById('farSeeds').innerHTML=far.map((s,i)=>perspectiveCard(s,`（${i+1}）自分から遠い意見${i===0?'①':'②'}`)).join('');
-  if(far.length)viewedDifferent=true;
+
+  if(!far.length){
+    box.innerHTML='<div class="sub">紹介できるタネがまだありません。</div>';
+    return;
+  }
+
+  box.innerHTML=far.map((s,i)=>
+    perspectiveCard(
+      s,
+      i===0?'（1）自分から遠い意見①':'（2）自分から遠い意見②'
+    )
+  ).join('');
+
+  // この画面を開いた時点で、実際に異なる意見を2つ提示している。
+  viewedDifferent=true;
 }
 function showSeed(s,user=false){
   if(user){
