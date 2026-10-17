@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ちがっタネ Prototype v0.1</title>
+<style>
+  :root{
+    --bg:#fbfaf5; --card:#ffffff; --ink:#263228; --sub:#6f786f; --line:#dde4da;
+    --accent:#6c9b74; --accent2:#d9ead8; --soft:#f2f6ef; --warm:#fff7df;
+    --shadow:0 10px 30px rgba(52,72,54,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#fbfaf5,#f3f7ef);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;}
+  .app{max-width:520px;margin:0 auto;min-height:100vh;padding:18px 16px 40px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.brand{font-weight:800;letter-spacing:.04em}.pill{font-size:12px;color:var(--sub);background:#fff;border:1px solid var(--line);padding:6px 9px;border-radius:999px}
+  .card{background:var(--card);border:1px solid #e6eadf;border-radius:24px;box-shadow:var(--shadow);padding:22px;margin:12px 0}
+  h1{font-size:28px;line-height:1.35;margin:8px 0 16px} h2{font-size:22px;margin:0 0 10px} h3{font-size:16px;margin:0 0 8px}
+  p{line-height:1.75;margin:8px 0}.sub{color:var(--sub);font-size:14px}.center{text-align:center}.question{font-size:27px;font-weight:800;line-height:1.45;padding:28px 18px;border-radius:22px;background:linear-gradient(145deg,#fff8dd,#f0f7e9);margin:18px 0}
+  button{border:0;cursor:pointer;font:inherit}.btn{width:100%;padding:14px 16px;border-radius:16px;background:var(--accent);color:white;font-weight:800;margin-top:12px;box-shadow:0 6px 16px rgba(74,120,83,.18)}.btn.secondary{background:white;color:var(--ink);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:var(--soft);color:var(--ink);box-shadow:none}.btn.small{width:auto;padding:10px 14px;margin:4px 4px 4px 0}
+  .row{display:flex;gap:8px;flex-wrap:wrap}.people button{flex:1;min-width:62px;background:#fff;border:1px solid var(--line);padding:12px;border-radius:14px}.people button.active{background:var(--accent2);border-color:var(--accent)}
+  input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 14px;font:inherit;background:#fff;color:var(--ink)} textarea{min-height:110px;resize:vertical}.field{margin:12px 0}.label{display:block;font-weight:700;margin-bottom:7px}
+  .tag{display:inline-flex;align-items:center;gap:5px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:13px;margin:4px 4px 0 0}
+  .answer-card{padding:14px;border:1px solid var(--line);background:#fff;border-radius:16px;margin:10px 0}.answer-card strong{display:block;margin-bottom:4px}.quote{font-size:17px;font-weight:750}.hint{background:var(--warm);border:1px solid #efe2b8;border-radius:16px;padding:12px;margin-top:10px}.hint button{display:block;width:100%;text-align:left;background:white;border:1px solid #eadfb9;border-radius:12px;padding:11px;margin:7px 0}
+  .facil{background:#f5f2ff;border:1px solid #e4def8;border-radius:18px;padding:16px;margin-top:16px}.facil .bubble{font-size:18px;font-weight:700;line-height:1.55}
+  .summary{background:#f5f8f2;border-radius:18px;padding:16px;margin:10px 0}.summary .big{font-size:20px;font-weight:800;line-height:1.5}
+  .map-wrap{margin:14px 0}.axis-label{font-size:12px;color:var(--sub);text-align:center}.map{position:relative;aspect-ratio:1/1;background:radial-gradient(circle at center,rgba(108,155,116,.05),rgba(108,155,116,0) 65%),#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden}.map:before,.map:after{content:"";position:absolute;background:#d9dfd6;z-index:0}.map:before{width:1px;top:0;bottom:0;left:50%}.map:after{height:1px;left:0;right:0;top:50%}.axis-x{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:6px}.axis-y-top,.axis-y-bottom{text-align:center;font-size:12px;color:var(--sub);margin:4px 0}
+  .seed{position:absolute;transform:translate(-50%,-50%);z-index:2;background:transparent;font-size:15px;padding:0}.seed.sample{opacity:.58}.seed.user{font-size:22px;opacity:1}.seed .name{position:absolute;white-space:nowrap;left:50%;transform:translateX(-50%);top:20px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:2px 6px;font-size:10px;color:var(--ink)}
+  .legend{font-size:12px;color:var(--sub);margin-top:8px}.seed-detail{min-height:110px;border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;margin-top:12px}.density{padding:10px 12px;border-radius:14px;background:var(--soft);font-size:14px;margin:10px 0}
+  .reaction{display:flex;gap:6px;flex-wrap:wrap}.reaction button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 10px;font-size:13px}.reaction button.active{background:var(--accent2);border-color:var(--accent)}
+  .growth{font-size:58px;text-align:center;margin:12px 0}.garden{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:28px;margin:12px 0}.progress{height:10px;background:#edf0e9;border-radius:999px;overflow:hidden}.progress>div{height:100%;background:var(--accent);border-radius:999px}
+  .hidden{display:none!important}.footer-note{font-size:11px;color:#8a928a;line-height:1.5;margin-top:14px}.stepbar{height:6px;background:#e9ede6;border-radius:999px;overflow:hidden;margin-bottom:12px}.stepbar div{height:100%;background:var(--accent);transition:width .3s ease}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#263228;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;display:none;z-index:99}
+  @media (min-width:760px){.app{padding-top:28px}.card{padding:28px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="brand">ちがっタネ 🌱</div><div class="pill">Prototype v0.1</div></div>
+  <div class="stepbar"><div id="progress" style="width:10%"></div></div>
+
+  <section id="s1" class="screen">
+    <div class="card center">
+      <div class="sub">今日のタネ</div>
+      <div class="question">家族で、休みの日にやりたいことがみんな違ったら、どうする？</div>
+      <p>正解はありません。思ったことを話してみよう。</p>
+      <button class="btn" onclick="go(2)">今日のタネをひらく</button>
+    </div>
+  </section>
+
+  <section id="s2" class="screen hidden">
+    <div class="card">
+      <h2>だれと話す？</h2>
+      <p class="sub">1台を囲んで、1〜4人で使えます。</p>
+      <div class="row people" id="peopleBtns"></div>
+      <div id="nameFields"></div>
+      <button class="btn" onclick="startAnswers()">はじめる</button>
+    </div>
+  </section>
+
+  <section id="s3" class="screen hidden">
+    <div class="card">
+      <div class="sub" id="whoLabel"></div>
+      <h2>まず、ひとことで。</h2>
+      <p class="sub">家族で、休みの日にやりたいことがみんな違ったら、どうする？</p>
+      <div class="field"><input id="shortAnswer" placeholder="例：別々に好きなことをする" /></div>
+      <button class="btn ghost" onclick="voiceStub('shortAnswer')">🎙 話して入力（デモ）</button>
+      <div id="previousAnswers"></div>
+      <button class="btn" onclick="toReason()">次へ</button>
+    </div>
+  </section>
+
+  <section id="s4" class="screen hidden">
+    <div class="card">
+      <div class="sub" id="answerEcho"></div>
+      <h2>どうしてそう思う？</h2>
+      <div class="field"><textarea id="reason" placeholder="理由を話したり、書いたりしてね"></textarea></div>
+      <button class="btn ghost" onclick="voiceStub('reason')">🎙 話す（デモ）</button>
+      <button class="btn secondary" onclick="showHints()">💡 うまく言葉にならない → ヒントをもらう</button>
+      <div id="hints" class="hint hidden"></div>
+      <button class="btn" onclick="saveAnswer()">このタネを置く</button>
+    </div>
+  </section>
+
+  <section id="s5" class="screen hidden">
+    <div class="card">
+      <h2>みんなのタネ 🌱</h2>
+      <p class="sub">答えが同じでも、理由は違うかもしれません。</p>
+      <div id="allAnswers"></div>
+      <div class="facil">
+        <h3>💬 ちょっと話してみよう</h3>
+        <div class="bubble" id="facilPrompt"></div>
+      </div>
+      <button class="btn" onclick="buildSummaries();go(6)">話した！ 次へ</button>
+    </div>
+  </section>
+
+  <section id="s6" class="screen hidden">
+    <div class="card">
+      <h2>わたしのタネ</h2>
+      <p class="sub">AIが、今回話した内容だけを短く整理した想定です。プロトタイプでは簡易ロジックです。</p>
+      <div id="summaries"></div>
+      <button class="btn" onclick="renderMap();go(7)">タネマップを見る</button>
+    </div>
+  </section>
+
+  <section id="s7" class="screen hidden">
+    <div class="card">
+      <h2>タネマップ 🌱</h2>
+      <p class="sub">近い場所にタネが多ければ、似た考えが比較的多い。離れていても、そこにもちゃんとタネがあります。</p>
+      <div class="axis-y-top">話し合い・その時の気持ちを大切にする ↑</div>
+      <div id="map" class="map"></div>
+      <div class="axis-x"><span>← みんな一緒を大切</span><span>それぞれの希望を大切 →</span></div>
+      <div class="axis-y-bottom">↓ 公平なルールで決める</div>
+      <div class="legend">🌱 小さいタネ＝AIで事前生成したサンプル　／　大きいタネ＝今回の家族</div>
+      <div id="density" class="density"></div>
+      <div id="seedDetail" class="seed-detail">気になるタネを押してみよう。</div>
+      <button class="btn" onclick="go(8)">ふりかえる</button>
+      <p class="footer-note">※プロトタイプのため、背景の「だれかのタネ」はAI生成サンプルです。本番では、同意して共有された実回答へ徐々に置き換える想定です。</p>
+    </div>
+  </section>
+
+  <section id="s8" class="screen hidden">
+    <div class="card">
+      <h2>今日のふりかえり</h2>
+      <p>違う考えに出会って、今の気持ちに一番近いものは？</p>
+      <div class="reaction" id="reflectionBtns">
+        <button onclick="pickReflection(this,'おもしろかった')">おもしろかった</button>
+        <button onclick="pickReflection(this,'ちょっと分かった')">ちょっと分かった</button>
+        <button onclick="pickReflection(this,'まだよく分からない')">まだよく分からない</button>
+        <button onclick="pickReflection(this,'やっぱり私は違う')">やっぱり私は違う</button>
+      </div>
+      <div class="field" style="margin-top:18px"><label class="label">このタネを、知らない誰かにも届けますか？</label>
+        <div class="row"><button class="btn small ghost" onclick="shareChoice=true;toast('みんなのタネにする を選びました')">🌱 みんなのタネにする</button><button class="btn small secondary" onclick="shareChoice=false;toast('自分たちだけ を選びました')">🔒 自分たちだけ</button></div>
+      </div>
+      <button class="btn" onclick="finish()">今日のタネを植える</button>
+    </div>
+  </section>
+
+  <section id="s9" class="screen hidden">
+    <div class="card center">
+      <div class="sub">今日のタネを植えました</div>
+      <div id="growthIcon" class="growth">🌱</div>
+      <h2 id="growthTitle">芽が出ました。</h2>
+      <p id="growthText" class="sub"></p>
+      <div class="progress"><div id="growthBar" style="width:10%"></div></div>
+      <div id="garden" class="garden"></div>
+      <button class="btn" onclick="restart()">もう一度ためす</button>
+    </div>
+  </section>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const question = '家族で、休みの日にやりたいことがみんな違ったら、どうする？';
+let participantCount=2, names=['わたし','家族']; let current=0, responses=[]; let reflection=''; let shareChoice=false; let viewedDifferent=false;
+const peopleBtns=document.getElementById('peopleBtns');
+for(let i=1;i<=4;i++){const b=document.createElement('button');b.textContent=i+'人';b.onclick=()=>setCount(i);peopleBtns.appendChild(b)}
+setCount(2);
+function setCount(n){participantCount=n;[...peopleBtns.children].forEach((b,i)=>b.classList.toggle('active',i===n-1));renderNameFields()}
+function renderNameFields(){const box=document.getElementById('nameFields');box.innerHTML='';for(let i=0;i<participantCount;i++){const d=document.createElement('div');d.className='field';d.innerHTML=`<label class="label">🌱 ${i+1}人目</label><input id="name${i}" value="${i===0?'わたし':''}" placeholder="ニックネーム"/>`;box.appendChild(d)}}
+function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById('s'+n).classList.remove('hidden');document.getElementById('progress').style.width=(Math.min(n,9)/9*100)+'%';window.scrollTo({top:0,behavior:'smooth'})}
+function startAnswers(){names=[];for(let i=0;i<participantCount;i++) names.push(document.getElementById('name'+i).value.trim()||`${i+1}人目`);current=0;responses=[];loadAnswerScreen();go(3)}
+function loadAnswerScreen(){document.getElementById('whoLabel').textContent=`🌱 ${names[current]}のタネ`;document.getElementById('shortAnswer').value='';document.getElementById('previousAnswers').innerHTML=responses.length?'<p class="sub" style="margin-top:16px">これまでの答え</p>'+responses.map(r=>`<span class="tag">${esc(r.name)}「${esc(r.short)}」</span>`).join(''):''}
+function toReason(){const v=document.getElementById('shortAnswer').value.trim();if(!v)return toast('ひとこと答えてみてね');document.getElementById('answerEcho').textContent=`${names[current]}：「${v}」`;document.getElementById('reason').value='';document.getElementById('hints').classList.add('hidden');go(4)}
+function showHints(){const a=document.getElementById('shortAnswer').value.trim();const list=hintFor(a);const box=document.getElementById('hints');box.innerHTML='<strong>💡 こんな理由に近い？</strong>'+list.map(x=>`<button onclick="chooseHint('${js(x)}')">${esc(x)}</button>`).join('')+`<button onclick="chooseHint('')">どれもちょっと違う／自分の言葉で話す</button>`;box.classList.remove('hidden')}
+function chooseHint(t){if(t)document.getElementById('reason').value=t;document.getElementById('hints').classList.add('hidden')}
+function hintFor(a){if(/別々|それぞれ|自由/.test(a))return ['せっかくの休みだから、それぞれが本当にしたいことを大切にしたいから','一緒にいることより、無理をしないことを大切にしたいから','あとで集まれば、別々に過ごしても家族でいられると思うから'];if(/多数決/.test(a))return ['みんなの意見を同じように扱えて公平だと思うから','短い時間で決めやすいから','一人だけがいつも我慢するのを避けたいから'];if(/順番/.test(a))return ['今回は私、次は別の人、とすれば公平だから','毎回話し合うより分かりやすく決められるから','誰かだけが得をし続けないから'];if(/話|相談|納得/.test(a))return ['理由を聞けば、みんなが納得できる別の案が見つかるかもしれないから','何をしたいかだけでなく、なぜしたいかも知りたいから','決め方より、みんなが納得することを大切にしたいから'];return ['一人だけが我慢するより、みんなが少しずつ納得できる方法にしたいから','その日の気持ちや事情も大事だと思うから','家族でも、したいことが違っていていいと思うから']}
+function saveAnswer(){const short=document.getElementById('shortAnswer').value.trim();const reason=document.getElementById('reason').value.trim();if(!reason)return toast('理由を書いてみるか、ヒントを使ってみてね');const pos=classify(short+' '+reason);responses.push({name:names[current],short,reason,x:pos.x,y:pos.y,summary:makeSummary(short,reason,pos)});current++;if(current<participantCount){loadAnswerScreen();go(3)}else{renderAllAnswers();go(5)}}
+function classify(t){let x=0,y=0;if(/別々|それぞれ|自由|好きなこと/.test(t))x+=72;if(/一緒|みんなで|全員/.test(t))x-=55;if(/多数決|ルール|公平|順番/.test(t))y-=65;if(/話し合|相談|納得|理由|気持ち/.test(t))y+=65;if(/順番/.test(t))x+=15;if(/午前|午後|半分|分け/.test(t)){x+=20;y+=10}if(/子ども|楽しみに|一番したい/.test(t)){x+=28;y+=38}if(x===0)x=((hash(t)%81)-40);if(y===0)y=((hash(t+'y')%81)-40);return {x:clamp(x,-95,95),y:clamp(y,-95,95)}}
+function makeSummary(s,r,p){if(p.x>45&&p.y>25)return '一人ひとりの希望や、その時の気持ちを大切にしたい';if(p.x>45&&p.y<-25)return 'それぞれの希望を尊重しつつ、公平な決め方も大切にしたい';if(p.x<-35&&p.y>25)return 'みんなで過ごすことと、納得できる話し合いを大切にしたい';if(p.x<-35&&p.y<-25)return 'みんなで過ごすために、公平で分かりやすい決め方を大切にしたい';return '一緒に過ごすことと、それぞれの希望のバランスを大切にしたい'}
+function renderAllAnswers(){const box=document.getElementById('allAnswers');box.innerHTML=responses.map(r=>`<div class="answer-card"><strong>🌱 ${esc(r.name)}</strong><div class="quote">「${esc(r.short)}」</div><div class="sub">${esc(r.reason)}</div></div>`).join('');document.getElementById('facilPrompt').textContent=facilitate()}
+function facilitate(){if(responses.length<2)return '自分の答えの中で、「本当に大事にしたいこと」は何だろう？';let a=responses[0],b=responses[1];const same=a.short===b.short||Math.abs(a.x-b.x)<25;return same?`${a.name}さんと${b.name}さんは、答えが近いけれど理由は同じかな？「何を一番大切にしているか」を聞き合ってみよう。`:`${a.name}さんと${b.name}さんは少し違うみたい。相手の理由の中で「それはちょっと分かる」と思えるところはある？`}
+function buildSummaries(){const box=document.getElementById('summaries');box.innerHTML=responses.map((r,i)=>`<div class="summary"><strong>🌱 ${esc(r.name)}</strong><div class="big" contenteditable="true" oninput="responses[${i}].summary=this.textContent">「${esc(r.summary)}」</div><p class="sub">理由：${esc(r.reason)}</p><div class="sub">※まとめ文はここで直接修正できます。</div></div>`).join('')}
+const samples=[
+['多数決で決める','みんなの意見を同じように扱えるから',-48,-76],['多数決にして、負けた人は次回優先','順番も組み合わせれば公平だと思うから',-28,-72],['じゃんけんで決める','短く公平に決めたいから',-35,-88],['順番にする','誰かだけが我慢し続けないから',8,-82],['毎回担当を決める','ルールがあるとケンカになりにくいから',15,-70],['午前と午後で分ける','みんなの希望を少しずつ叶えたいから',18,-34],['全部少しずつやる','一人だけ我慢するのは嫌だから',-8,-25],['家族会議で決める','理由まで聞いて納得したいから',-34,72],['みんなが楽しめる別案を探す','一緒に楽しめることを大切にしたいから',-58,82],['その日に一番楽しみにしていた人に合わせる','平等より気持ちを大事にしたい日もあるから',24,68],['子どもに決めてもらう','大人はまた行けるけど子どもには特別かもしれないから',34,58],['まず理由を聞く','したいことより、なぜしたいかを知りたいから',-18,78],['別々に過ごす','休みの日くらい好きなことをしたいから',78,26],['それぞれ好きなことをして夕飯で集まる','一緒にいる時間は別につくればいいから',82,42],['無理に合わせない','家族でも違っていていいと思うから',72,50],['行きたい人だけ行く','全員が我慢する必要はないから',86,18],['今回は別々、次回は一緒','自由と家族時間を両方ほしいから',58,14],['二人ずつに分かれる','同じ希望の人同士なら楽しめるから',64,-8],['順番で好きなことをする','自由だけど公平さも必要だから',48,-60],['予定表を作って回す','前もって決めると揉めにくいから',32,-72],['家族で一つに決める','せっかくの休みは一緒に過ごしたいから',-74,-26],['親が決める','全体を見て決める人が必要だから',-62,-52],['一番お金のかからない案','家計も大切だから',-18,-56],['一番近い場所にする','移動が少なくてみんな楽だから',-22,-46],['天気で決める','条件に合うものを選ぶと納得しやすいから',-10,-44],['その場で話し合う','予定より今の気持ちを大事にしたいから',-22,62],['一人ずつプレゼンする','理由を知れば選びやすいから',-20,52],['みんなが嫌じゃない案を探す','全員が100点でなくても納得できればいいから',-48,55],['まず子どもの希望を聞く','子どもが楽しめる日を作りたいから',18,48],['誕生日が近い人を優先','その時ならではの事情を大切にしたいから',12,34],['疲れている人に合わせる','元気な人より休みたい人を優先したいから',22,38],['前回我慢した人を優先','状況に応じた公平さがあると思うから',20,10],['今日は各自で自由','家族でも自分の時間が必要だから',88,34],['好きな人同士で分かれる','同じ家族でも全員一緒でなくていいから',76,10],['一人で出かけてもいい','自分で決める練習にもなるから',92,22],['オンラインで別のことをする','場所が同じでも好きなことは別でいいから',70,-2],['それぞれ一番やりたいことを言う','まず希望を出すことが大事だから',46,46],['家族LINEで案を出して決める','話しやすい方法なら何でもいいから',24,28],['みんなが一つだけ譲る','完全一致より少しずつ譲る方が現実的だから',-6,22],['今日は誰も譲らない','無理にまとめなくてもいいから',62,66],['一番珍しい案にする','せっかくなら新しいことをしたいから',12,72],['子どもと大人で分かれる','世代でやりたいことが違うのは自然だから',66,-16],['くじ引きにする','運なら誰のせいにもならないから',-12,-84],['予算内の案から選ぶ','制約を先に決めると公平だから',-4,-64],['前日に決める','当日に揉めたくないから',-8,-54],['みんなが行ったことのない場所','違う希望を新しい体験に変えたいから',-26,38],['一番強く希望している人に合わせる','同じ一票でも思いの強さは違うと思うから',36,62],['今回は何もしない','決めることに疲れる日もあるから',44,18]
+].map((d,i)=>({id:'s'+i,short:d[0],reason:d[1],x:d[2],y:d[3],source:'synthetic'}));
+function renderMap(){const map=document.getElementById('map');map.innerHTML='';samples.forEach(s=>{const b=document.createElement('button');b.className='seed sample';b.style.left=((s.x+100)/2)+'%';b.style.top=((100-s.y)/2)+'%';b.textContent='🌱';b.title=s.short;b.onclick=()=>showSeed(s);map.appendChild(b)});responses.forEach((r,i)=>{const b=document.createElement('button');b.className='seed user';b.style.left=((r.x+100)/2)+'%';b.style.top=((100-r.y)/2)+'%';b.innerHTML=`🌱<span class="name">${esc(r.name)}</span>`;b.onclick=()=>showSeed(r,true);map.appendChild(b)});updateDensity()}
+function updateDensity(){if(!responses.length)return;let msg=responses.map(r=>{const n=samples.filter(s=>dist(r,s)<42).length;let t=n>=10?'似たタネがたくさんあります':n>=5?'似たタネがほどほどにあります':'似たタネは少なめです';return `<strong>${esc(r.name)}</strong>：このあたりには、${t}。`}).join('<br>');document.getElementById('density').innerHTML=msg}
+function showSeed(s,user=false){if(!user){const nearest=Math.min(...responses.map(r=>dist(r,s)));if(nearest>65)viewedDifferent=true}document.getElementById('seedDetail').innerHTML=`<strong>${user?'🌱 '+esc(s.name):'🌱 だれかのタネ'}</strong><div class="quote" style="margin-top:6px">「${esc(s.short)}」</div><p>${esc(s.reason)}</p>${user?'':`<div class="reaction"><button onclick="this.classList.toggle('active')">ちょっと分かる</button><button onclick="this.classList.toggle('active');viewedDifferent=true">もっと聞いてみたい</button><button onclick="this.classList.toggle('active')">私はやっぱり違う</button></div>`}`}
+function pickReflection(el,v){reflection=v;[...document.querySelectorAll('#reflectionBtns button')].forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+function finish(){if(!reflection)return toast('今の気持ちをひとつ選んでみてね');let state=JSON.parse(localStorage.getItem('chigattaneGrowth')||'{"sessions":0,"different":0,"flowers":0}');state.sessions++;if(viewedDifferent)state.different++;const newFlowers=Math.floor(Math.min(state.sessions,state.different)/5);const bloomed=newFlowers>state.flowers;state.flowers=newFlowers;localStorage.setItem('chigattaneGrowth',JSON.stringify(state));if(shareChoice){let shared=JSON.parse(localStorage.getItem('chigattaneShared')||'[]');shared.push(...responses.map(r=>({...r,shared:true,createdAt:new Date().toISOString()})));localStorage.setItem('chigattaneShared',JSON.stringify(shared))}
+const icon=bloomed?'🌸':state.sessions>=3?'🌷':'🌱';document.getElementById('growthIcon').textContent=icon;document.getElementById('growthTitle').textContent=bloomed?'花がひとつ咲きました。':state.sessions>=3?'つぼみがふくらんできました。':'芽が出ました。';document.getElementById('growthText').textContent=`これまで ${state.sessions} 回タネを植え、違う場所のタネに ${state.different} 回出会いました。`;document.getElementById('growthBar').style.width=Math.min(100,(Math.min(state.sessions,state.different)%5)/5*100)+'%';document.getElementById('garden').textContent='🌱 '.repeat(Math.min(state.sessions,5))+'🌸 '.repeat(Math.min(state.flowers,8));go(9)}
+function restart(){current=0;responses=[];reflection='';shareChoice=false;viewedDifferent=false;go(1)}
+function voiceStub(id){toast('このプロトタイプでは音声入力を擬似表示しています。実装版ではブラウザ音声認識へ接続します。')}
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}function esc(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function js(s=''){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ')}
+</script>
+</body>
+</html>
